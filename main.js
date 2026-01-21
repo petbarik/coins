@@ -73,22 +73,26 @@ class PETCoins {
  async getCoins(args) {
   const card = String(args.CARD);
 
-  const fetchData = async () => {
+    return await this.firebaseRequest("GET", "/cards/" + card + "/coins");
+  }
+
+  async firebaseRequest(method, path, body = null) {
+    const options = {
+      method,
+      headers: { "Content-Type": "application/json" }
+    };
+
+    if (body !== null) {
+      options.body = JSON.stringify(body);
+    }
+
     try {
-      const response = await fetch(this.baseUrl + "/cards/" + card + "/coins.json", {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await fetch(this.baseUrl + path + ".json", options);
       const data = await response.json();
       return JSON.stringify(data);
     } catch (e) {
       return JSON.stringify({ error: e.message });
     }
-  };
-
-    return await fetchData();
   }
 }
 
