@@ -52,12 +52,19 @@ class PETCoins {
   /* ===== Fee calculation (matches your calculate fees block) ===== */
   calculateFees(amount) {
     // Same result as 25 → 1.5625
-    return amount * 0.0625;
+    return (amount - (amount - (amount / 16)));
   }
 
   /* ===== COMMAND BLOCK ===== */
   async makeTransaction(args) {
-    
+    const from = String(args.CARD);
+    const verPIN = String(args.PIN);
+    const to = String(args.TO);
+    const amount = args.AMOUNT;
+
+    if (verPIN == await this.firebaseRequest("GET", "/cards/" + from + "pin")) {
+      this.TransactionSucces = true;
+    }
   }
 
   /* ===== BOOLEAN BLOCK ===== */
