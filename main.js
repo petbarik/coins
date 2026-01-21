@@ -62,7 +62,7 @@ class PETCoins {
     const to = String(args.TO);
     const amount = args.AMOUNT;
 
-    if (verPIN == await this.firebaseRequest("GET", "/cards/" + from + "pin")) {
+    if (verPIN == await this.firebaseRequest("GET", "/cards/" + from + "/pin")) {
       this.TransactionSucces = true;
     }
   }
