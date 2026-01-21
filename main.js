@@ -57,7 +57,7 @@ class PETCoins {
 
   /* ===== COMMAND BLOCK ===== */
   async makeTransaction(args) {
-    const from = String(args.CARD);
+    const from = String(args.FROM);
     const verPIN = String(args.PIN);
     const to = String(args.TO);
     const amount = args.AMOUNT;
