@@ -2,6 +2,7 @@ class PETCoins {
   constructor() {
     this.baseUrl =
       'https://pet-coin-default-rtdb.europe-west1.firebasedatabase.app';
+    this.TransactionSucces = false;
     this.networkOwner = '10000000';
   }
 
@@ -14,7 +15,7 @@ class PETCoins {
           opcode: 'makeTransaction',
           blockType: Scratch.BlockType.COMMAND,
           text:
-            'Make transaction from card [FROM] PIN [PIN] to card [TO] amount [AMOUNT]',
+            'transaction from card [FROM] PIN [PIN] to card [TO] amount [AMOUNT]',
           arguments: {
             FROM: { type: Scratch.ArgumentType.NUMBER },
             PIN: { type: Scratch.ArgumentType.NUMBER },
@@ -26,12 +27,15 @@ class PETCoins {
           opcode: 'transactionMade',
           blockType: Scratch.BlockType.BOOLEAN,
           text:
-            'transaction made from [FROM] to [TO] amount [AMOUNT] ?',
-          arguments: {
-            FROM: { type: Scratch.ArgumentType.NUMBER },
-            TO: { type: Scratch.ArgumentType.NUMBER },
-            AMOUNT: { type: Scratch.ArgumentType.NUMBER }
-          }
+            'transaction succes?',
+          arguments: {}
+        },
+        {
+          opcode: 'transactionMadeReset',
+          blockType: Scratch.BlockType.COMMAND,
+          text:
+            'reset transaction status',
+          arguments: {}
         },
         {
           opcode: 'getCoins',
@@ -57,8 +61,12 @@ class PETCoins {
   }
 
   /* ===== BOOLEAN BLOCK ===== */
-  async transactionMade(args) {
-   
+  async transactionMade() {
+    return (this.TransactionSucces);
+  }
+
+  async transactionMadeReset() {
+    this.TransactionSucces = false;
   }
 
   /* ===== REPORTER BLOCK ===== */
