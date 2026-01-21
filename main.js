@@ -16,9 +16,9 @@ class PETCoins {
           text:
             'Make transaction from card [FROM] PIN [PIN] to card [TO] amount [AMOUNT]',
           arguments: {
-            FROM: { type: Scratch.ArgumentType.STRING },
-            PIN: { type: Scratch.ArgumentType.STRING },
-            TO: { type: Scratch.ArgumentType.STRING },
+            FROM: { type: Scratch.ArgumentType.NUMBER },
+            PIN: { type: Scratch.ArgumentType.NUMBER },
+            TO: { type: Scratch.ArgumentType.NUMBER },
             AMOUNT: { type: Scratch.ArgumentType.NUMBER }
           }
         },
@@ -28,8 +28,8 @@ class PETCoins {
           text:
             'transaction made from [FROM] to [TO] amount [AMOUNT] ?',
           arguments: {
-            FROM: { type: Scratch.ArgumentType.STRING },
-            TO: { type: Scratch.ArgumentType.STRING },
+            FROM: { type: Scratch.ArgumentType.NUMBER },
+            TO: { type: Scratch.ArgumentType.NUMBER },
             AMOUNT: { type: Scratch.ArgumentType.NUMBER }
           }
         },
@@ -38,7 +38,7 @@ class PETCoins {
           blockType: Scratch.BlockType.REPORTER,
           text: 'coins of card [CARD]',
           arguments: {
-            CARD: { type: Scratch.ArgumentType.STRING }
+            CARD: { type: Scratch.ArgumentType.NUMBER }
           }
         }
       ]
@@ -53,110 +53,34 @@ class PETCoins {
 
   /* ===== COMMAND BLOCK ===== */
   async makeTransaction(args) {
-    const from = String(args.FROM);
-    const pin = String(args.PIN);
-    const to = String(args.TO);
-    const amount = Number(args.AMOUNT);
-
-    if (!from || !to || amount <= 0) return;
-
-    const now = Date.now().toString();
-    const base = this.baseUrl;
-
-    const fromCard = await (await fetch(`${base}/${from}.json`)).json();
-    const toCard = await (await fetch(`${base}/${to}.json`)).json();
-    const netCard = await (await fetch(`${base}/${this.networkOwner}.json`)).json();
-
-    if (!fromCard || !toCard || !netCard) return;
-    if (String(fromCard.pin) !== pin) return;
-    if (Number(fromCard.coins) < amount) return;
-
-    const fees = this.calculateFees(amount);
-
-    const amountStr = String(amount);
-    const feeStr = String(fees);
-
-    const fromTx = Array.isArray(fromCard.transactions)
-      ? [...fromCard.transactions]
-      : [];
-    const toTx = Array.isArray(toCard.transactions)
-      ? [...toCard.transactions]
-      : [];
-    const netTx = Array.isArray(netCard.transactions)
-      ? [...netCard.transactions]
-      : [];
-
-    /* Sender */
-    fromTx.push({
-      amount: amountStr,
-      card: to,
-      date: now,
-      fees: feeStr,
-      type: 'send'
-    });
-
-    /* Receiver */
-    toTx.push({
-      amount: amountStr,
-      card: from,
-      date: now,
-      fees: feeStr,
-      type: 'recive'
-    });
-
-    /* Network owner */
-    netTx.push({
-      amount: feeStr,
-      card: this.networkOwner,
-      date: now,
-      fees: '0',
-      type: 'network-fee'
-    });
-
-    const updates = {
-      [`${from}/coins`]: Number(fromCard.coins) - amount,
-      [`${to}/coins`]: Number(toCard.coins) + amount,
-      [`${this.networkOwner}/coins`]: Number(netCard.coins) + fees,
-
-      [`${from}/transactions`]: fromTx,
-      [`${to}/transactions`]: toTx,
-      [`${this.networkOwner}/transactions`]: netTx
-    };
-
-    await fetch(`${base}/.json`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates)
-    });
+    
   }
 
   /* ===== BOOLEAN BLOCK ===== */
   async transactionMade(args) {
-    const from = String(args.FROM);
-    const to = String(args.TO);
-    const amount = String(args.AMOUNT);
-
-    const res = await fetch(`${this.baseUrl}/${from}/transactions.json`);
-    const txs = await res.json();
-
-    if (!Array.isArray(txs)) return false;
-
-    return txs.some(tx =>
-      tx.type === 'send' &&
-      tx.card === to &&
-      tx.amount === amount
-    );
+   
   }
 
   /* ===== REPORTER BLOCK ===== */
   async getCoins(args) {
     const card = String(args.CARD);
-    if (!card) return 0;
-
-    const res = await fetch(`${this.baseUrl}/${card}/coins.json`);
-    const coins = await res.json();
-
-    return Number(coins) || 0;
+    
+    const fetchData = async () => {
+      try {
+        const response = await fetch(this.baseUrl + "/cards/" + card + "/coins.json", {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await response.json();
+        return JSON.stringify(data);
+        } catch (e) {
+          return JSON.stringify({ error: e.message });
+        }
+      };
+ 
+    return await fetchData;
   }
 }
 
