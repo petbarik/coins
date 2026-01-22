@@ -112,9 +112,14 @@ class PETCoins {
   async getCoins(args) {
     const card = String(args.CARD);
     const raw = await this.firebaseRequest("GET", "/cards/" + card + "/coins");
-    if (raw === null || raw === undefined || raw === "null") return 0;
-    return JSON.parse(raw);
+    if (raw === null || raw === undefined || raw === "null") {
+      return 0;
+    }
+    const value = JSON.parse(raw);
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 0;
   }
+
 
   async firebaseRequest(method, path, body = null) {
     const options = {
