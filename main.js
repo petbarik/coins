@@ -2,7 +2,7 @@
   'use strict';
 
   if (!Scratch.extensions.unsandboxed) {
-    throw new Error('This extension must be run unsandboxed');
+    return;
   }
 
   class PETCoins {
@@ -74,33 +74,100 @@
         await this.firebaseRequest("GET", "/cards")
       ) ?? {};
 
-      if (verPIN == storedPin && from != to && to in cards && (await this.getCoins({ CARD: from })) >= amount) {
+      if (
+        verPIN == storedPin &&
+        from != to &&
+        to in cards &&
+        (await this.getCoins({ CARD: from })) >= amount
+      ) {
         const fee = this.calculateFees(amount);
         const now = Date.now().toString();
 
-        const fromTxRaw = JSON.parse(await this.firebaseRequest("GET", "/cards/" + from + "/transactions")) ?? {};
+        const fromTxRaw =
+          JSON.parse(
+            await this.firebaseRequest(
+              "GET",
+              "/cards/" + from + "/transactions"
+            )
+          ) ?? {};
         const fromTx = Object.values(fromTxRaw);
-        fromTx.push({ amount: String(amount), card: to, date: now, fees: String(fee), type: "send" });
-        await this.firebaseRequest("PUT", "/cards/" + from + "/transactions", fromTx);
+        fromTx.push({
+          amount: String(amount),
+          card: to,
+          date: now,
+          fees: String(fee),
+          type: "send"
+        });
+        await this.firebaseRequest(
+          "PUT",
+          "/cards/" + from + "/transactions",
+          fromTx
+        );
 
         const fromCoins = (await this.getCoins({ CARD: from })) - amount;
-        await this.firebaseRequest("PUT", "/cards/" + from + "/coins", fromCoins);
+        await this.firebaseRequest(
+          "PUT",
+          "/cards/" + from + "/coins",
+          fromCoins
+        );
 
-        const toTxRaw = JSON.parse(await this.firebaseRequest("GET", "/cards/" + to + "/transactions")) ?? {};
+        const toTxRaw =
+          JSON.parse(
+            await this.firebaseRequest(
+              "GET",
+              "/cards/" + to + "/transactions"
+            )
+          ) ?? {};
         const toTx = Object.values(toTxRaw);
-        toTx.push({ amount: String(amount), card: from, date: now, fees: String(fee), type: "recive" });
-        await this.firebaseRequest("PUT", "/cards/" + to + "/transactions", toTx);
+        toTx.push({
+          amount: String(amount),
+          card: from,
+          date: now,
+          fees: String(fee),
+          type: "recive"
+        });
+        await this.firebaseRequest(
+          "PUT",
+          "/cards/" + to + "/transactions",
+          toTx
+        );
 
-        const toCoins = (await this.getCoins({ CARD: to })) + (amount - fee);
-        await this.firebaseRequest("PUT", "/cards/" + to + "/coins", toCoins);
+        const toCoins =
+          (await this.getCoins({ CARD: to })) + (amount - fee);
+        await this.firebaseRequest(
+          "PUT",
+          "/cards/" + to + "/coins",
+          toCoins
+        );
 
-        const netTxRaw = JSON.parse(await this.firebaseRequest("GET", "/cards/" + this.networkOwner + "/transactions")) ?? {};
+        const netTxRaw =
+          JSON.parse(
+            await this.firebaseRequest(
+              "GET",
+              "/cards/" + this.networkOwner + "/transactions"
+            )
+          ) ?? {};
         const netTx = Object.values(netTxRaw);
-        netTx.push({ amount: String(fee), card: this.networkOwner, date: now, fees: "0", type: "network-fee" });
-        await this.firebaseRequest("PUT", "/cards/" + this.networkOwner + "/transactions", netTx);
+        netTx.push({
+          amount: String(fee),
+          card: this.networkOwner,
+          date: now,
+          fees: "0",
+          type: "network-fee"
+        });
+        await this.firebaseRequest(
+          "PUT",
+          "/cards/" + this.networkOwner + "/transactions",
+          netTx
+        );
 
-        const netCoins = (await this.getCoins({ CARD: this.networkOwner })) + fee;
-        await this.firebaseRequest("PUT", "/cards/" + this.networkOwner + "/coins", netCoins);
+        const netCoins =
+          (await this.getCoins({ CARD: this.networkOwner })) + fee;
+        await this.firebaseRequest(
+          "PUT",
+          "/cards/" + this.networkOwner + "/coins",
+          netCoins
+        );
 
         this.TransactionSucces = true;
       }
@@ -116,7 +183,10 @@
 
     async getCoins(args) {
       const card = String(args.CARD);
-      const raw = await this.firebaseRequest("GET", "/cards/" + card + "/coins");
+      const raw = await this.firebaseRequest(
+        "GET",
+        "/cards/" + card + "/coins"
+      );
       if (raw === null || raw === undefined || raw === "null") {
         return 0;
       }
@@ -132,7 +202,10 @@
       };
       if (body !== null) options.body = JSON.stringify(body);
       try {
-        const response = await fetch(this.baseUrl + path + ".json", options);
+        const response = await fetch(
+          this.baseUrl + path + ".json",
+          options
+        );
         const data = await response.json();
         return JSON.stringify(data);
       } catch (e) {
