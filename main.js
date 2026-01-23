@@ -74,7 +74,7 @@
         await this.firebaseRequest("GET", "/cards")
       ) ?? {};
 
-      const result = confirm("Do you want to send " + String(amount) + " to " + to + " ?");
+      const result = confirm("Do you want to send " + String(amount) + " coins to " + to + " ?");
 
       if (
         verPIN == storedPin &&
